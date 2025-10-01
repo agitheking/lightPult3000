@@ -4,26 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bühnen‑Lichtsteuerung · Viertelkreis</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
-
-  <!-- Favicon (Data URL, verhindert 404) -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
-<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js?v=2"></script>
-<link href="https://unpkg.com/@tailwindcss/ui/dist/tailwind-ui.min.css" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React -->
+  <!-- React/Babel/Tailwind (Dev) -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-
-  <!-- Babel (für Dev) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<!-- LÖSCHEN, wenn noch vorhanden -->
-
-  <!-- Tailwind (Dev) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js?v=2"></script>
   <link href="https://unpkg.com/@tailwindcss/ui/dist/tailwind-ui.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -48,11 +34,9 @@
 /** React Hooks */
 const { useState, useEffect, useMemo, useRef } = React;
 
-/** 🔧 Shim statt Framer Motion (verhindert 'motion' undefined) */
-// Immer ganz oben im Babel-Script:
-const motion = (props) => props.children;       // No-Op (kein Crash)
-const AnimatePresence = React.Fragment;          // No-Op
-
+/** Shims (keine Abhängigkeit auf Motion) */
+const motion = (props) => props.children;
+const AnimatePresence = React.Fragment;
 
 const MODES = ["editor","probe","show","guest"];
 const TYPES = ["DIM","RGB"];
@@ -66,25 +50,58 @@ const LS = {
 const METER_TO_PX = 100;
 const RADIUS_M = 4;
 const R = RADIUS_M * METER_TO_PX;
-const VIEWBOX = {x:-20,y:-20,w:R+120,h:R+120};
+
+/* 👉 ViewBox so, dass der linke untere Quadrant sichtbar ist */
+const VIEWBOX = { x: -(R+120), y: -20, w: R+120, h: R+120 };
 
 function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
 function len(x,y){ return Math.sqrt(x*x+y*y); }
 function uid(p){ return p+"_"+Math.random().toString(36).slice(2,9); }
 function distributeAngles(n){ if(n<=1) return [45]; const a=8, b=82, s=(b-a)/(n-1); return Array.from({length:n},(_,i)=>Math.round(a+i*s)); }
+function toRad(d){ return d*Math.PI/180; }
+function toDeg(r){ return r*180/Math.PI; }
 
 function makeInitialLights(n){
-  const angles = distributeAngles(n);
-  const palette = ["#ffd166","#90cdf4","#f56565","#c084fc","#4ade80","#f59e0b","#22d3ee","#a3e635","#fb7185","#f472b6","#60a5fa","#facc15"];
-  return angles.map((a,i)=>{
-    const off = 40;
-    const rad = a*Math.PI/180;
-    let x = (R+off)*Math.cos(rad), y=(R+off)*Math.sin(rad);
-    if(i%5===0){ x = R*0.6*Math.cos(rad); y=R*0.6*Math.sin(rad); }
+  const angles  = distributeAngles(n); // 8..82°
+  const palette = ["#ffd166","#90cdf4","#f56565","#c084fc","#4ade80",
+                   "#f59e0b","#22d3ee","#a3e635","#fb7185","#f472b6",
+                   "#60a5fa","#facc15"];
+
+  const marginOut    = 32;  // leicht vor dem Bühnenrand (außen)
+  const insideOffset = 70;  // drei Spots nach innen
+  const insideIdx    = new Set([1, 6, 11]); // welche drei (0‑basiert)
+
+  return angles.map((a, i) => {
+    const rad = toRad(a);
+
+    // Punkt AUF dem linken unteren Viertelkreis:
+    // rad=0 -> (0,R) (Süd), rad=90° -> (-R,0) (West)
+    const onR = { x: -R * Math.sin(rad), y: R * Math.cos(rad) };
+
+    // radialer Normal‑Vektor (nach außen, bereits normiert)
+    const nrm = { x: onR.x / R, y: onR.y / R };
+
+    // Standard: Spots ein Stück vor dem Rand (Publikumsseite)
+    let x = onR.x + nrm.x * marginOut;
+    let y = onR.y + nrm.y * marginOut;
+
+    // Drei Spots nach innen in die Bühne
+    if (insideIdx.has(i)) {
+      x = onR.x - nrm.x * insideOffset;
+      y = onR.y - nrm.y * insideOffset;
+    }
+
+    // Standard‑Richtung: zum Zentrum (Beam zeigt in die Bühne)
+    const dirDeg = (toDeg(Math.atan2(-y, -x)) + 360) % 360;
+
     return {
-      id:"L"+(i+1), label:"Spot "+(i+1), type: i%4===0 ? "RGB":"DIM",
-      angleDeg:a, x,y, brightness:60, r:255,g:200,b:120, color:palette[i%palette.length],
-      dmx:{universe:0,start:1+i*4,mode:"std"}
+      id:"L"+(i+1), label:"Spot "+(i+1),
+      type: i%4===0 ? "RGB" : "DIM",
+      angleDeg:a, x, y,
+      brightness:60, r:255, g:200, b:120,
+      color: palette[i % palette.length],
+      dmx:{universe:0, start:1+i*4, mode:"std"},
+      dirDeg // <— Drehwinkel des Lichtkegels
     };
   });
 }
@@ -113,12 +130,41 @@ function buildDMXChannels(lights){
   return channels;
 }
 
+/* Hilfsfunktionen für Rotations‑UI */
+function pointOnCircle(cx,cy,r,deg){
+  return { x: cx + r*Math.cos(toRad(deg)), y: cy + r*Math.sin(toRad(deg)) };
+}
+function angleFromPoint(cx,cy,px,py){
+  return (toDeg(Math.atan2(py - cy, px - cx)) + 360) % 360;
+}
+function arcPath(cx,cy,r,a1,a2){
+  const x1 = cx + r * Math.cos(toRad(a1));
+  const y1 = cy + r * Math.sin(toRad(a1));
+  const x2 = cx + r * Math.cos(toRad(a2));
+  const y2 = cy + r * Math.sin(toRad(a2));
+  const da = ((a2 - a1 + 360) % 360);
+  const large = da > 180 ? 1 : 0;
+  const sweep = 1; // immer „vorwärts“
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${large} ${sweep} ${x2} ${y2}`;
+}
+
 function App(){
   const [mode, setMode] = useState(localStorage.getItem(LS.mode)||"editor");
   const [theme, setTheme] = useState(localStorage.getItem(LS.theme)||"realistic");
   const [lights, setLights] = useState(()=>{
     const s = localStorage.getItem(LS.lights);
-    return s? JSON.parse(s): makeInitialLights(14);
+    let ls = s ? JSON.parse(s) : makeInitialLights(14);
+    // Auto‑Migration: dirDeg ergänzen & bei altem Layout ggf. spiegeln
+    ls = ls.map(l => ({
+      ...l,
+      dirDeg: (typeof l.dirDeg === "number") ? l.dirDeg
+               : (toDeg(Math.atan2(-l.y, -l.x)) + 360) % 360
+    }));
+    const right = ls.filter(l => l.x > 0).length;
+    if (right > ls.length / 2) {
+      ls = ls.map(l => ({ ...l, x: -Math.abs(l.x) }));
+    }
+    return ls;
   });
   const [scenes, setScenes] = useState(()=>{
     const s = localStorage.getItem(LS.scenes);
@@ -131,8 +177,12 @@ function App(){
   const [auto, setAuto] = useState(()=> Number(localStorage.getItem(LS.auto)||5));
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [selectedId, setSelectedId] = useState(lights[0]?.id || "");
+
+  const [selectedId, setSelectedId] = useState(null);
   const [dragId, setDragId] = useState(null);
+  const [rotId, setRotId] = useState(null);
+  const [hoverId, setHoverId] = useState(null);
+
   const svgRef = useRef(null);
 
   useEffect(()=>localStorage.setItem(LS.mode,mode),[mode]);
@@ -205,16 +255,65 @@ function App(){
     return ()=>clearInterval(h);
   },[playing, playlist.length, currentIdx, auto, caps.showPlaylist]);
 
-  function stagePath(){ const s={x:R,y:0}, e={x:0,y:R}; return `M ${s.x} ${s.y} A ${R} ${R} 0 0 1 ${e.x} ${e.y} L 0 0 Z`; }
+  /* 👉 Viertelkreis: von Süd (0,R) nach West (-R,0), sweep=1 → unten links */
+  function stagePath(){
+    const s = { x: 0,  y: R };
+    const e = { x: -R, y: 0 };
+    return `M ${s.x} ${s.y} A ${R} ${R} 0 0 1 ${e.x} ${e.y} L 0 0 Z`;
+  }
+
   function toSvgPoint(evt){
     const svg = svgRef.current, rect = svg.getBoundingClientRect();
     const px = evt.clientX - rect.left, py = evt.clientY - rect.top;
     const x = VIEWBOX.x + (px/rect.width)*VIEWBOX.w, y = VIEWBOX.y + (py/rect.height)*VIEWBOX.h;
     return {x,y};
   }
-  function constrain(x,y){ const m=R+60; return {x:clamp(x,0,m), y:clamp(y,0,m)}; }
-  function onMove(e){ if(!caps.canEdit || !dragId) return; const p=toSvgPoint(e); const c=constrain(p.x,p.y); setLights(ls=>ls.map(l=>l.id===dragId? {...l,x:c.x,y:c.y}:l)); }
-  function onUp(){ if(dragId) setDragId(null); }
+
+  /* Drag‑Grenzen: x ∈ [-m,0], y ∈ [0,m] */
+  function constrain(x, y){
+    const m = R + 120;
+    return { x: clamp(x, -m, 0), y: clamp(y, 0, m) };
+  }
+
+  /* Gemeinsamer SVG‑MouseMove: Drag, Rotation, Hover */
+  function onSvgMove(e){
+    const p = toSvgPoint(e);
+
+    // 1) Rotation aktiv?
+    if (rotId && caps.canEdit) {
+      setLights(ls => ls.map(l => {
+        if (l.id !== rotId) return l;
+        // Handle‑Winkel = Winkel vom Spot zum Mauszeiger
+        const handleDeg = angleFromPoint(l.x, l.y, p.x, p.y);
+        // Beam zeigt genau GEGENÜBER des Handles:
+        const newDir = (handleDeg + 180) % 360;
+        return { ...l, dirDeg: newDir };
+      }));
+      return;
+    }
+
+    // 2) Drag aktiv?
+    if (dragId && caps.canEdit) {
+      const c = constrain(p.x, p.y);
+      setLights(ls=>ls.map(l=>l.id===dragId? {...l, x:c.x, y:c.y,
+        // beim Verschieben: Richtung standardmäßig weiterhin zum Zentrum,
+        // außer der User rotiert danach manuell.
+        dirDeg: (toDeg(Math.atan2(-c.y, -c.x)) + 360) % 360
+      }:l));
+      return;
+    }
+
+    // 3) Hover‑Erkennung (nur wenn nichts aktiv)
+    const near = 24; // Welt‑Einheiten (ca. Pixel)
+    let h = null, best = Infinity;
+    for (const l of lights) {
+      const d = Math.hypot(l.x - p.x, l.y - p.y);
+      if (d < near && d < best) { best = d; h = l.id; }
+    }
+    setHoverId(h);
+  }
+
+  function onUp(){ if(dragId) setDragId(null); if (rotId) setRotId(null); }
 
   function exportFull(){
     const blob = new Blob([JSON.stringify({theme,lights,scenes,playlist},null,2)], {type:"application/json"});
@@ -352,15 +451,19 @@ function App(){
         )}
 
         <div className="card">
-          <div className="text-sm mb-2">Bühnesdasad (Viertelkreis r={RADIUS_M}m)</div>
+          <div className="text-sm mb-2">Bühne (Viertelkreis r={RADIUS_M}m)</div>
           <div className="relative w-full" style={{aspectRatio:"1/1"}}>
-            <svg ref={svgRef} viewBox={`${VIEWBOX.x} ${VIEWBOX.y} ${VIEWBOX.w} ${VIEWBOX.h}`}
-                 onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} style={{width:"100%", height:"100%"}}>
+            <svg ref={svgRef}
+                 viewBox={`${VIEWBOX.x} ${VIEWBOX.y} ${VIEWBOX.w} ${VIEWBOX.h}`}
+                 onMouseMove={onSvgMove} onMouseUp={onUp} onMouseLeave={onUp}
+                 style={{width:"100%", height:"100%"}}>
               <defs>
                 <radialGradient id="stageGrad" cx="0" cy="0" r="1">
                   <stop offset="0%" stopColor={"#303446"}></stop>
                   <stop offset="100%" stopColor={"#1e293b"}></stop>
                 </radialGradient>
+
+                {/* Farbkegel pro Lampe */}
                 {lights.map(l=>(
                   <radialGradient key={`beam-${l.id}`} id={`beam-${l.id}`} cx="0" cy="0" r="1">
                     <stop offset="0%" stopColor={beamColor(l)} stopOpacity="0.9"></stop>
@@ -368,28 +471,87 @@ function App(){
                     <stop offset="100%" stopColor={beamColor(l)} stopOpacity="0"></stop>
                   </radialGradient>
                 ))}
+
+                {/* Pfeilspitzen für den Rotations‑Ring */}
+                <marker id="arrow-tip" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+                </marker>
               </defs>
+
+              {/* Bühne: linker unterer Viertelkreis */}
               <path d={stagePath()} fill="url(#stageGrad)" stroke="#475569" strokeWidth="2"/>
-              <path d={`M ${R + 40} 0 A ${R + 40} ${R + 40} 0 0 1 0 ${R + 40}`} stroke="#64748b" strokeWidth="2" fill="none" strokeDasharray="6 6"/>
+
+              {/* Gestrichelter Hilfsbogen links */}
+              <path
+                d={`M 0 ${R + 40} A ${R + 40} ${R + 40} 0 0 1 ${-R - 40} 0`}
+                stroke="#64748b" strokeWidth="2" fill="none" strokeDasharray="6 6"
+              />
+
+              {/* Lichtkegel + Spot + Dreh‑UI */}
               {lights.map(l=>{
                 const bs = l.brightness/100;
-                const dirx = -l.x, diry=-l.y, L=Math.max(1,len(dirx,diry)), ux=dirx/L, uy=diry/L;
+
+                // Beam‑Richtung aus dirDeg
+                const a = toRad(l.dirDeg);
+                const ux = Math.cos(a), uy = Math.sin(a);
+
+                // Spread (Öffnungswinkel)
                 const spread = 18*Math.PI/180, half=spread/2, bl = (R*0.9)*(0.6+0.4*bs);
                 const c1 = Math.cos(-half), s1=Math.sin(-half), c2=Math.cos(half), s2=Math.sin(half);
                 const rx1=ux*c1-uy*s1, ry1=ux*s1+uy*c1, rx2=ux*c2-uy*s2, ry2=ux*s2+uy*c2;
                 const p0={x:l.x,y:l.y}, p1={x:l.x+rx1*bl, y:l.y+ry1*bl}, p2={x:l.x+rx2*bl, y:l.y+ry2*bl};
+
+                // Dreh‑UI: Handle auf der GEGENSEITE (180° versetzt)
+                const handleDeg = (l.dirDeg + 180) % 360;
+                const ringR = 36;
+                const arcA1 = (handleDeg - 90 + 360) % 360;
+                const arcA2 = (handleDeg + 90) % 360;
+                const handlePos = pointOnCircle(l.x, l.y, ringR, handleDeg);
+                const arcD = arcPath(l.x, l.y, ringR, arcA1, arcA2);
+                const showRing = (hoverId === l.id) || (selectedId === l.id);
+
                 return (
                   <g key={l.id}>
-                    <path d={`M ${p0.x} ${p0.y} L ${p1.x} ${p1.y} L ${p2.x} ${p2.y} Z`} fill={`url(#beam-${l.id})`} style={{mixBlendMode:"lighten", opacity: (bs>0)? (0.18 + bs*0.6): 0}}/>
-                    <g onMouseDown={(e)=>{ if(!caps.canEdit) return; e.stopPropagation(); setDragId(l.id); }} cursor={caps.canEdit? "grab":"default"}>
+                    {/* Beam */}
+                    <path d={`M ${p0.x} ${p0.y} L ${p1.x} ${p1.y} L ${p2.x} ${p2.y} Z`}
+                          fill={`url(#beam-${l.id})`}
+                          style={{mixBlendMode:"lighten", opacity: (bs>0)? (0.18 + bs*0.6): 0}}/>
+
+                    {/* Rotations‑Ring (nur bei Hover/Selektion) */}
+                    {showRing && (
+                      <>
+                        <path d={arcD}
+                              stroke="#94a3b8" strokeWidth="2" fill="none"
+                              markerStart="url(#arrow-tip)"
+                              markerEnd="url(#arrow-tip)"/>
+                        {/* Klick‑/Drag‑Fläche auf dem Ring */}
+                        <path d={arcD}
+                              stroke="transparent" strokeWidth="14" fill="none"
+                              style={{cursor:"grab"}}
+                              onMouseDown={(e)=>{ if(!caps.canEdit) return; e.stopPropagation(); e.preventDefault(); setRotId(l.id); }}/>
+                        {/* Handle */}
+                        <circle cx={handlePos.x} cy={handlePos.y} r="6"
+                                fill="#0f172a" stroke="#94a3b8" strokeWidth="2"
+                                style={{cursor:"grab"}}
+                                onMouseDown={(e)=>{ if(!caps.canEdit) return; e.stopPropagation(); e.preventDefault(); setRotId(l.id); }}/>
+                      </>
+                    )}
+
+                    {/* Spot‑Kreis (Drag) */}
+                    <g onMouseDown={(e)=>{ if(!caps.canEdit) return; e.stopPropagation(); setDragId(l.id); }}
+                       cursor={caps.canEdit? "grab":"default"}>
                       <circle cx={l.x} cy={l.y} r={8} stroke="#cbd5e1" strokeWidth="2" fill="#0f172a"/>
                     </g>
+
+                    {/* Label */}
                     <text x={l.x+12} y={l.y-6} fontSize="10" fill="#cbd5e1">{l.label}</text>
                   </g>
                 );
               })}
+
+              {/* Achsen/Kanten: links unten */}
               <line x1="0" y1="-10" x2="0" y2={R} stroke="#334155" strokeWidth="2"/>
-              <line x1="-10" y1="0" x2={R} y2="0" stroke="#334155" strokeWidth="2"/>
+              <line x1={-R} y1="0" x2="0" y2="0" stroke="#334155" strokeWidth="2"/>
             </svg>
           </div>
 
