@@ -17,11 +17,11 @@ RUN python3 -m venv ${VENV_PATH} && ${VENV_PATH}/bin/pip install --upgrade pip
 
 # App
 WORKDIR /app
-COPY backend /app/backend
-COPY frontend /app/frontend
 COPY backend/requirements.txt /app/backend/requirements.txt
+RUN mkdir -p /app/backend /app/frontend
 
 RUN ${VENV_PATH}/bin/pip install -r /app/backend/requirements.txt
+RUN adduser --disabled-password --gecos "" ola
 
 # Supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

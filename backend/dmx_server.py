@@ -1,11 +1,12 @@
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import threading
+import os
 
 # NOTE: OLA Python binding becomes available when OLA is installed via your OS (e.g. apt install ola).
-# The module name is 'ola'; we import it lazily so the server still runs without OLA for dry runs.
 try:
     import ola.ClientWrapper
     _OLA_AVAILABLE = True
@@ -15,6 +16,27 @@ except Exception as _e:
 
 app = FastAPI(title="Theater DMX Server", version="1.0.0")
 
+# --- Static frontend mount ---
+# Absoluten Pfad ermitteln: /pfad/zu/deinem/projekt/frontend
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+
+# optional CORS aktivieren, falls JS fetcht
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # oder nur ["http://localhost"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/__debug_routes")
+def debug_routes():
+    return [f"{r.path} → {','.join(r.methods)}" for r in app.routes]
+# statische Dateien mounten
+
+
+# --- DMX Setup ---
 UNIVERSE = 0
 DMX_LOCK = threading.Lock()
 DMX_BUFFER = bytearray([0] * 512)
@@ -65,3 +87,4 @@ def status():
         "ola_available": _OLA_AVAILABLE,
         "preview_first_24_channels": list(DMX_BUFFER[:24]),
     }
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

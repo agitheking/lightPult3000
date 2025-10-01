@@ -6,8 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: theater-light-controller
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - ./docker/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
     ports:
-      - "8000:8000"   # FastAPI
+      - "8000:8000"   # FastAPIP
       - "5500:5500"   # Frontend (static)
       - "9090:9090"   # OLA Web UI
     # Map your USB DMX interface into the container (adjust device path as needed)
