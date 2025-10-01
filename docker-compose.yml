@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  lightctrl:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: theater-light-controller
+    ports:
+      - "8000:8000"   # FastAPI
+      - "5500:5500"   # Frontend (static)
+      - "9090:9090"   # OLA Web UI
+    # Map your USB DMX interface into the container (adjust device path as needed)
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"   # Enttec DMX USB Pro typically shows up here
+      # - "/dev/ttyUSB1:/dev/ttyUSB1" # add more if needed
+    # On some systems you may also need privileged to allow olad to talk to USB
+    privileged: true
+    restart: unless-stopped

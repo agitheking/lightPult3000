@@ -1,0 +1,1138 @@
+{
+  "theme": "theater",
+  "lights": [
+    {
+      "id": "L1",
+      "label": "FR50Z 1",
+      "type": "DIM",
+      "angleDeg": 8.0,
+      "x": 435.72,
+      "y": 61.24,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#ffd166",
+      "dmx": {
+        "universe": 0,
+        "start": 1,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L2",
+      "label": "LED 1",
+      "type": "RGB",
+      "angleDeg": 14.73,
+      "x": 224.38,
+      "y": 58.99,
+      "brightness": 60,
+      "r": 120,
+      "g": 160,
+      "b": 255,
+      "color": "#90cdf4",
+      "dmx": {
+        "universe": 0,
+        "start": 2,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L3",
+      "label": "FR50Z 2",
+      "type": "DIM",
+      "angleDeg": 21.45,
+      "x": 409.52,
+      "y": 160.9,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#f56565",
+      "dmx": {
+        "universe": 0,
+        "start": 5,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L4",
+      "label": "FR50Z 3",
+      "type": "DIM",
+      "angleDeg": 28.18,
+      "x": 387.85,
+      "y": 207.79,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#c084fc",
+      "dmx": {
+        "universe": 0,
+        "start": 6,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L5",
+      "label": "LED 2",
+      "type": "RGB",
+      "angleDeg": 34.91,
+      "x": 190.25,
+      "y": 132.77,
+      "brightness": 60,
+      "r": 120,
+      "g": 160,
+      "b": 255,
+      "color": "#4ade80",
+      "dmx": {
+        "universe": 0,
+        "start": 7,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L6",
+      "label": "FR50Z 4",
+      "type": "DIM",
+      "angleDeg": 41.64,
+      "x": 328.83,
+      "y": 292.36,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#f59e0b",
+      "dmx": {
+        "universe": 0,
+        "start": 10,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L7",
+      "label": "FR50Z 5",
+      "type": "DIM",
+      "angleDeg": 48.36,
+      "x": 292.36,
+      "y": 328.83,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#22d3ee",
+      "dmx": {
+        "universe": 0,
+        "start": 11,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L8",
+      "label": "FR50Z 6",
+      "type": "DIM",
+      "angleDeg": 55.09,
+      "x": 251.81,
+      "y": 360.82,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#a3e635",
+      "dmx": {
+        "universe": 0,
+        "start": 12,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L9",
+      "label": "LED 3",
+      "type": "RGB",
+      "angleDeg": 61.82,
+      "x": 109.56,
+      "y": 204.5,
+      "brightness": 60,
+      "r": 120,
+      "g": 160,
+      "b": 255,
+      "color": "#fb7185",
+      "dmx": {
+        "universe": 0,
+        "start": 13,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L10",
+      "label": "FR50Z 7",
+      "type": "DIM",
+      "angleDeg": 68.55,
+      "x": 160.9,
+      "y": 409.52,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#f472b6",
+      "dmx": {
+        "universe": 0,
+        "start": 16,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L11",
+      "label": "LED 4",
+      "type": "RGB",
+      "angleDeg": 75.27,
+      "x": 58.99,
+      "y": 224.38,
+      "brightness": 60,
+      "r": 120,
+      "g": 160,
+      "b": 255,
+      "color": "#60a5fa",
+      "dmx": {
+        "universe": 0,
+        "start": 17,
+        "mode": "std"
+      }
+    },
+    {
+      "id": "L12",
+      "label": "FR50Z 8",
+      "type": "DIM",
+      "angleDeg": 82.0,
+      "x": 61.24,
+      "y": 435.72,
+      "brightness": 65,
+      "r": 255,
+      "g": 200,
+      "b": 120,
+      "color": "#facc15",
+      "dmx": {
+        "universe": 0,
+        "start": 20,
+        "mode": "std"
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S_PARTY",
+      "name": "Party",
+      "lights": [
+        {
+          "id": "L1",
+          "label": "FR50Z 1",
+          "type": "DIM",
+          "angleDeg": 8.0,
+          "x": 435.72,
+          "y": 61.24,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#ffd166",
+          "dmx": {
+            "universe": 0,
+            "start": 1,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L2",
+          "label": "LED 1",
+          "type": "RGB",
+          "angleDeg": 14.73,
+          "x": 224.38,
+          "y": 58.99,
+          "brightness": 85,
+          "r": 80,
+          "g": 140,
+          "b": 255,
+          "color": "#90cdf4",
+          "dmx": {
+            "universe": 0,
+            "start": 2,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L3",
+          "label": "FR50Z 2",
+          "type": "DIM",
+          "angleDeg": 21.45,
+          "x": 409.52,
+          "y": 160.9,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f56565",
+          "dmx": {
+            "universe": 0,
+            "start": 5,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L4",
+          "label": "FR50Z 3",
+          "type": "DIM",
+          "angleDeg": 28.18,
+          "x": 387.85,
+          "y": 207.79,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#c084fc",
+          "dmx": {
+            "universe": 0,
+            "start": 6,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L5",
+          "label": "LED 2",
+          "type": "RGB",
+          "angleDeg": 34.91,
+          "x": 190.25,
+          "y": 132.77,
+          "brightness": 85,
+          "r": 60,
+          "g": 255,
+          "b": 140,
+          "color": "#4ade80",
+          "dmx": {
+            "universe": 0,
+            "start": 7,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L6",
+          "label": "FR50Z 4",
+          "type": "DIM",
+          "angleDeg": 41.64,
+          "x": 328.83,
+          "y": 292.36,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f59e0b",
+          "dmx": {
+            "universe": 0,
+            "start": 10,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L7",
+          "label": "FR50Z 5",
+          "type": "DIM",
+          "angleDeg": 48.36,
+          "x": 292.36,
+          "y": 328.83,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#22d3ee",
+          "dmx": {
+            "universe": 0,
+            "start": 11,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L8",
+          "label": "FR50Z 6",
+          "type": "DIM",
+          "angleDeg": 55.09,
+          "x": 251.81,
+          "y": 360.82,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#a3e635",
+          "dmx": {
+            "universe": 0,
+            "start": 12,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L9",
+          "label": "LED 3",
+          "type": "RGB",
+          "angleDeg": 61.82,
+          "x": 109.56,
+          "y": 204.5,
+          "brightness": 85,
+          "r": 60,
+          "g": 255,
+          "b": 140,
+          "color": "#fb7185",
+          "dmx": {
+            "universe": 0,
+            "start": 13,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L10",
+          "label": "FR50Z 7",
+          "type": "DIM",
+          "angleDeg": 68.55,
+          "x": 160.9,
+          "y": 409.52,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f472b6",
+          "dmx": {
+            "universe": 0,
+            "start": 16,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L11",
+          "label": "LED 4",
+          "type": "RGB",
+          "angleDeg": 75.27,
+          "x": 58.99,
+          "y": 224.38,
+          "brightness": 85,
+          "r": 255,
+          "g": 180,
+          "b": 40,
+          "color": "#60a5fa",
+          "dmx": {
+            "universe": 0,
+            "start": 17,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L12",
+          "label": "FR50Z 8",
+          "type": "DIM",
+          "angleDeg": 82.0,
+          "x": 61.24,
+          "y": 435.72,
+          "brightness": 50,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#facc15",
+          "dmx": {
+            "universe": 0,
+            "start": 20,
+            "mode": "std"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S_LIVING",
+      "name": "Wohnzimmer Konzert 1",
+      "lights": [
+        {
+          "id": "L1",
+          "label": "FR50Z 1",
+          "type": "DIM",
+          "angleDeg": 8.0,
+          "x": 435.72,
+          "y": 61.24,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#ffd166",
+          "dmx": {
+            "universe": 0,
+            "start": 1,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L2",
+          "label": "LED 1",
+          "type": "RGB",
+          "angleDeg": 14.73,
+          "x": 224.38,
+          "y": 58.99,
+          "brightness": 45,
+          "r": 255,
+          "g": 170,
+          "b": 90,
+          "color": "#90cdf4",
+          "dmx": {
+            "universe": 0,
+            "start": 2,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L3",
+          "label": "FR50Z 2",
+          "type": "DIM",
+          "angleDeg": 21.45,
+          "x": 409.52,
+          "y": 160.9,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f56565",
+          "dmx": {
+            "universe": 0,
+            "start": 5,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L4",
+          "label": "FR50Z 3",
+          "type": "DIM",
+          "angleDeg": 28.18,
+          "x": 387.85,
+          "y": 207.79,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#c084fc",
+          "dmx": {
+            "universe": 0,
+            "start": 6,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L5",
+          "label": "LED 2",
+          "type": "RGB",
+          "angleDeg": 34.91,
+          "x": 190.25,
+          "y": 132.77,
+          "brightness": 45,
+          "r": 255,
+          "g": 170,
+          "b": 90,
+          "color": "#4ade80",
+          "dmx": {
+            "universe": 0,
+            "start": 7,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L6",
+          "label": "FR50Z 4",
+          "type": "DIM",
+          "angleDeg": 41.64,
+          "x": 328.83,
+          "y": 292.36,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f59e0b",
+          "dmx": {
+            "universe": 0,
+            "start": 10,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L7",
+          "label": "FR50Z 5",
+          "type": "DIM",
+          "angleDeg": 48.36,
+          "x": 292.36,
+          "y": 328.83,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#22d3ee",
+          "dmx": {
+            "universe": 0,
+            "start": 11,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L8",
+          "label": "FR50Z 6",
+          "type": "DIM",
+          "angleDeg": 55.09,
+          "x": 251.81,
+          "y": 360.82,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#a3e635",
+          "dmx": {
+            "universe": 0,
+            "start": 12,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L9",
+          "label": "LED 3",
+          "type": "RGB",
+          "angleDeg": 61.82,
+          "x": 109.56,
+          "y": 204.5,
+          "brightness": 45,
+          "r": 255,
+          "g": 170,
+          "b": 90,
+          "color": "#fb7185",
+          "dmx": {
+            "universe": 0,
+            "start": 13,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L10",
+          "label": "FR50Z 7",
+          "type": "DIM",
+          "angleDeg": 68.55,
+          "x": 160.9,
+          "y": 409.52,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f472b6",
+          "dmx": {
+            "universe": 0,
+            "start": 16,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L11",
+          "label": "LED 4",
+          "type": "RGB",
+          "angleDeg": 75.27,
+          "x": 58.99,
+          "y": 224.38,
+          "brightness": 45,
+          "r": 255,
+          "g": 170,
+          "b": 90,
+          "color": "#60a5fa",
+          "dmx": {
+            "universe": 0,
+            "start": 17,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L12",
+          "label": "FR50Z 8",
+          "type": "DIM",
+          "angleDeg": 82.0,
+          "x": 61.24,
+          "y": 435.72,
+          "brightness": 55,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#facc15",
+          "dmx": {
+            "universe": 0,
+            "start": 20,
+            "mode": "std"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S_ROCK",
+      "name": "Rock Konzert",
+      "lights": [
+        {
+          "id": "L1",
+          "label": "FR50Z 1",
+          "type": "DIM",
+          "angleDeg": 8.0,
+          "x": 435.72,
+          "y": 61.24,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#ffd166",
+          "dmx": {
+            "universe": 0,
+            "start": 1,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L2",
+          "label": "LED 1",
+          "type": "RGB",
+          "angleDeg": 14.73,
+          "x": 224.38,
+          "y": 58.99,
+          "brightness": 90,
+          "r": 220,
+          "g": 30,
+          "b": 30,
+          "color": "#90cdf4",
+          "dmx": {
+            "universe": 0,
+            "start": 2,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L3",
+          "label": "FR50Z 2",
+          "type": "DIM",
+          "angleDeg": 21.45,
+          "x": 409.52,
+          "y": 160.9,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f56565",
+          "dmx": {
+            "universe": 0,
+            "start": 5,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L4",
+          "label": "FR50Z 3",
+          "type": "DIM",
+          "angleDeg": 28.18,
+          "x": 387.85,
+          "y": 207.79,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#c084fc",
+          "dmx": {
+            "universe": 0,
+            "start": 6,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L5",
+          "label": "LED 2",
+          "type": "RGB",
+          "angleDeg": 34.91,
+          "x": 190.25,
+          "y": 132.77,
+          "brightness": 90,
+          "r": 40,
+          "g": 80,
+          "b": 255,
+          "color": "#4ade80",
+          "dmx": {
+            "universe": 0,
+            "start": 7,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L6",
+          "label": "FR50Z 4",
+          "type": "DIM",
+          "angleDeg": 41.64,
+          "x": 328.83,
+          "y": 292.36,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f59e0b",
+          "dmx": {
+            "universe": 0,
+            "start": 10,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L7",
+          "label": "FR50Z 5",
+          "type": "DIM",
+          "angleDeg": 48.36,
+          "x": 292.36,
+          "y": 328.83,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#22d3ee",
+          "dmx": {
+            "universe": 0,
+            "start": 11,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L8",
+          "label": "FR50Z 6",
+          "type": "DIM",
+          "angleDeg": 55.09,
+          "x": 251.81,
+          "y": 360.82,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#a3e635",
+          "dmx": {
+            "universe": 0,
+            "start": 12,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L9",
+          "label": "LED 3",
+          "type": "RGB",
+          "angleDeg": 61.82,
+          "x": 109.56,
+          "y": 204.5,
+          "brightness": 90,
+          "r": 40,
+          "g": 80,
+          "b": 255,
+          "color": "#fb7185",
+          "dmx": {
+            "universe": 0,
+            "start": 13,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L10",
+          "label": "FR50Z 7",
+          "type": "DIM",
+          "angleDeg": 68.55,
+          "x": 160.9,
+          "y": 409.52,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f472b6",
+          "dmx": {
+            "universe": 0,
+            "start": 16,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L11",
+          "label": "LED 4",
+          "type": "RGB",
+          "angleDeg": 75.27,
+          "x": 58.99,
+          "y": 224.38,
+          "brightness": 90,
+          "r": 40,
+          "g": 80,
+          "b": 255,
+          "color": "#60a5fa",
+          "dmx": {
+            "universe": 0,
+            "start": 17,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L12",
+          "label": "FR50Z 8",
+          "type": "DIM",
+          "angleDeg": 82.0,
+          "x": 61.24,
+          "y": 435.72,
+          "brightness": 80,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#facc15",
+          "dmx": {
+            "universe": 0,
+            "start": 20,
+            "mode": "std"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S_WORK",
+      "name": "Arbeitslicht",
+      "lights": [
+        {
+          "id": "L1",
+          "label": "FR50Z 1",
+          "type": "DIM",
+          "angleDeg": 8.0,
+          "x": 435.72,
+          "y": 61.24,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#ffd166",
+          "dmx": {
+            "universe": 0,
+            "start": 1,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L2",
+          "label": "LED 1",
+          "type": "RGB",
+          "angleDeg": 14.73,
+          "x": 224.38,
+          "y": 58.99,
+          "brightness": 0,
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "color": "#90cdf4",
+          "dmx": {
+            "universe": 0,
+            "start": 2,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L3",
+          "label": "FR50Z 2",
+          "type": "DIM",
+          "angleDeg": 21.45,
+          "x": 409.52,
+          "y": 160.9,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f56565",
+          "dmx": {
+            "universe": 0,
+            "start": 5,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L4",
+          "label": "FR50Z 3",
+          "type": "DIM",
+          "angleDeg": 28.18,
+          "x": 387.85,
+          "y": 207.79,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#c084fc",
+          "dmx": {
+            "universe": 0,
+            "start": 6,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L5",
+          "label": "LED 2",
+          "type": "RGB",
+          "angleDeg": 34.91,
+          "x": 190.25,
+          "y": 132.77,
+          "brightness": 0,
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "color": "#4ade80",
+          "dmx": {
+            "universe": 0,
+            "start": 7,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L6",
+          "label": "FR50Z 4",
+          "type": "DIM",
+          "angleDeg": 41.64,
+          "x": 328.83,
+          "y": 292.36,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f59e0b",
+          "dmx": {
+            "universe": 0,
+            "start": 10,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L7",
+          "label": "FR50Z 5",
+          "type": "DIM",
+          "angleDeg": 48.36,
+          "x": 292.36,
+          "y": 328.83,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#22d3ee",
+          "dmx": {
+            "universe": 0,
+            "start": 11,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L8",
+          "label": "FR50Z 6",
+          "type": "DIM",
+          "angleDeg": 55.09,
+          "x": 251.81,
+          "y": 360.82,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#a3e635",
+          "dmx": {
+            "universe": 0,
+            "start": 12,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L9",
+          "label": "LED 3",
+          "type": "RGB",
+          "angleDeg": 61.82,
+          "x": 109.56,
+          "y": 204.5,
+          "brightness": 0,
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "color": "#fb7185",
+          "dmx": {
+            "universe": 0,
+            "start": 13,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L10",
+          "label": "FR50Z 7",
+          "type": "DIM",
+          "angleDeg": 68.55,
+          "x": 160.9,
+          "y": 409.52,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#f472b6",
+          "dmx": {
+            "universe": 0,
+            "start": 16,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L11",
+          "label": "LED 4",
+          "type": "RGB",
+          "angleDeg": 75.27,
+          "x": 58.99,
+          "y": 224.38,
+          "brightness": 0,
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "color": "#60a5fa",
+          "dmx": {
+            "universe": 0,
+            "start": 17,
+            "mode": "std"
+          }
+        },
+        {
+          "id": "L12",
+          "label": "FR50Z 8",
+          "type": "DIM",
+          "angleDeg": 82.0,
+          "x": 61.24,
+          "y": 435.72,
+          "brightness": 100,
+          "r": 255,
+          "g": 200,
+          "b": 120,
+          "color": "#facc15",
+          "dmx": {
+            "universe": 0,
+            "start": 20,
+            "mode": "std"
+          }
+        }
+      ]
+    }
+  ],
+  "playlist": [
+    {
+      "pid": "P1",
+      "sceneId": "S_PARTY",
+      "name": "Party"
+    },
+    {
+      "pid": "P2",
+      "sceneId": "S_LIVING",
+      "name": "Wohnzimmer Konzert 1"
+    },
+    {
+      "pid": "P3",
+      "sceneId": "S_ROCK",
+      "name": "Rock Konzert"
+    },
+    {
+      "pid": "P4",
+      "sceneId": "S_PARTY",
+      "name": "Party"
+    },
+    {
+      "pid": "P5",
+      "sceneId": "S_WORK",
+      "name": "Arbeitslicht"
+    }
+  ]
+}

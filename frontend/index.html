@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bsssühnen‑Lichtsteuerung · Viertelkreis</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
+
+  <!-- Favicon (Data URL, verhindert 404) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='8' cy='8' r='6' fill='%238b5cf6'/%3E%3C/svg%3E"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js?v=2"></script>
+<link href="https://unpkg.com/@tailwindcss/ui/dist/tailwind-ui.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel (für Dev) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- LÖSCHEN, wenn noch vorhanden -->
+
+  <!-- Tailwind (Dev) -->
+  <link href="https://unpkg.com/@tailwindcss/ui/dist/tailwind-ui.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { background: #0b1220; color: #e5e7eb; }
+    .card { background: rgba(15,23,42,.6); border:1px solid #334155; border-radius:16px; padding:16px; }
+    .btn { border:1px solid #334155; border-radius:12px; padding:8px 12px; background:#0b1220; }
+    .btn:hover { background:#0f172a; }
+    .pill { border:1px solid #334155; padding:2px 8px; border-radius:999px; font-size:12px;}
+    .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid1 { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    .kachel { border:1px solid #334155; border-radius:16px; padding:16px; cursor:pointer; }
+    .kachel:hover { background:#0f172a; }
+    .muted { opacity:.6; pointer-events:none; }
+  </style>
+</head>
+<body class="p-6">
+  <div id="app"></div>
+
+  <script type="text/babel">
+/** React Hooks */
+const { useState, useEffect, useMemo, useRef } = React;
+
+/** 🔧 Shim statt Framer Motion (verhindert 'motion' undefined) */
+// Immer ganz oben im Babel-Script:
+const motion = (props) => props.children;       // No-Op (kein Crash)
+const AnimatePresence = React.Fragment;          // No-Op
+
+
+const MODES = ["editor","probe","show","guest"];
+const TYPES = ["DIM","RGB"];
+const THEMES = ["realistic","comic","theater"];
+
+const LS = {
+  theme:"q_theme", lights:"q_lights", scenes:"q_scenes",
+  playlist:"q_playlist", auto:"q_auto", mode:"q_mode"
+};
+
+const METER_TO_PX = 100;
+const RADIUS_M = 4;
+const R = RADIUS_M * METER_TO_PX;
+const VIEWBOX = {x:-20,y:-20,w:R+120,h:R+120};
+
+function clamp(v,min,max){ return Math.max(min, Math.min(max,v)); }
+function len(x,y){ return Math.sqrt(x*x+y*y); }
+function uid(p){ return p+"_"+Math.random().toString(36).slice(2,9); }
+function distributeAngles(n){ if(n<=1) return [45]; const a=8, b=82, s=(b-a)/(n-1); return Array.from({length:n},(_,i)=>Math.round(a+i*s)); }
+
+function makeInitialLights(n){
+  const angles = distributeAngles(n);
+  const palette = ["#ffd166","#90cdf4","#f56565","#c084fc","#4ade80","#f59e0b","#22d3ee","#a3e635","#fb7185","#f472b6","#60a5fa","#facc15"];
+  return angles.map((a,i)=>{
+    const off = 40;
+    const rad = a*Math.PI/180;
+    let x = (R+off)*Math.cos(rad), y=(R+off)*Math.sin(rad);
+    if(i%5===0){ x = R*0.6*Math.cos(rad); y=R*0.6*Math.sin(rad); }
+    return {
+      id:"L"+(i+1), label:"Spot "+(i+1), type: i%4===0 ? "RGB":"DIM",
+      angleDeg:a, x,y, brightness:60, r:255,g:200,b:120, color:palette[i%palette.length],
+      dmx:{universe:0,start:1+i*4,mode:"std"}
+    };
+  });
+}
+
+function beamColor(l){
+  if(l.type==="RGB"){
+    const s=l.brightness/100, r=Math.round(l.r*s), g=Math.round(l.g*s), b=Math.round(l.b*s);
+    return `rgb(${r},${g},${b})`;
+  }
+  return l.color;
+}
+
+function buildDMXChannels(lights){
+  const channels = [];
+  lights.forEach(l => {
+    if(l.type==="DIM"){
+      const v = Math.round(255*(l.brightness/100));
+      channels.push({address: l.dmx.start, value: v});
+    } else {
+      const s = l.brightness/100;
+      channels.push({address: l.dmx.start,   value: Math.round(l.r*s)});
+      channels.push({address: l.dmx.start+1, value: Math.round(l.g*s)});
+      channels.push({address: l.dmx.start+2, value: Math.round(l.b*s)});
+    }
+  });
+  return channels;
+}
+
+function App(){
+  const [mode, setMode] = useState(localStorage.getItem(LS.mode)||"editor");
+  const [theme, setTheme] = useState(localStorage.getItem(LS.theme)||"realistic");
+  const [lights, setLights] = useState(()=>{
+    const s = localStorage.getItem(LS.lights);
+    return s? JSON.parse(s): makeInitialLights(14);
+  });
+  const [scenes, setScenes] = useState(()=>{
+    const s = localStorage.getItem(LS.scenes);
+    return s? JSON.parse(s): [];
+  });
+  const [playlist, setPlaylist] = useState(()=>{
+    const s = localStorage.getItem(LS.playlist);
+    return s? JSON.parse(s): [];
+  });
+  const [auto, setAuto] = useState(()=> Number(localStorage.getItem(LS.auto)||5));
+  const [playing, setPlaying] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [selectedId, setSelectedId] = useState(lights[0]?.id || "");
+  const [dragId, setDragId] = useState(null);
+  const svgRef = useRef(null);
+
+  useEffect(()=>localStorage.setItem(LS.mode,mode),[mode]);
+  useEffect(()=>localStorage.setItem(LS.theme,theme),[theme]);
+  useEffect(()=>localStorage.setItem(LS.lights,JSON.stringify(lights)),[lights]);
+  useEffect(()=>localStorage.setItem(LS.scenes,JSON.stringify(scenes)),[scenes]);
+  useEffect(()=>localStorage.setItem(LS.playlist,JSON.stringify(playlist)),[playlist]);
+  useEffect(()=>localStorage.setItem(LS.auto,String(auto)),[auto]);
+
+  const caps = useMemo(()=> ({
+    canEdit: mode!=="show" && mode!=="guest",
+    showPlaylist: mode!=="editor" && mode!=="guest",
+    reorder: mode==="probe",
+    addRemove: mode==="probe",
+    sceneSaveDelete: mode!=="show" && mode!=="guest",
+    importExport: mode!=="show" && mode!=="guest",
+    playerControls: mode!=="editor",
+    autoEdit: mode!=="show" && mode!=="guest",
+  }),[mode]);
+
+  function setBrightness(id, v){ if(!caps.canEdit) return; setLights(ls=>ls.map(l=>l.id===id? {...l,brightness:Number(v)}:l)); }
+  function setRGB(id, key, v){ if(!caps.canEdit) return; setLights(ls=>ls.map(l=>l.id===id? {...l,[key]:Number(v)}:l)); }
+  function setType(id, t){ if(!caps.canEdit) return; setLights(ls=>ls.map(l=>l.id===id? {...l,type:t}:l)); }
+  function renameLight(id, name){ if(!caps.canEdit) return; setLights(ls=>ls.map(l=>l.id===id? {...l,label:name}:l)); }
+  function setDMX(id, patch){ if(!caps.canEdit) return; setLights(ls=>ls.map(l=>l.id===id? {...l, dmx:{...l.dmx, ...patch}}:l)); }
+
+  function saveScene(name){ if(!caps.sceneSaveDelete||!name) return;
+    setScenes(ss=>[{id:"S"+Date.now(), name, lights}, ...ss]);
+  }
+  function applyScene(id){
+    const s = scenes.find(sc=>sc.id===id);
+    if(!s) return;
+    setLights(s.lights);
+    setSelectedId(s.lights[0]?.id||"");
+    sendDMX(buildDMXChannels(s.lights));
+  }
+  function deleteScene(id){ if(!caps.sceneSaveDelete) return; setScenes(ss=>ss.filter(s=>s.id!==id)); }
+
+  function addToPlaylist(sceneId){ if(!caps.addRemove) return;
+    const s = scenes.find(sc=>sc.id===sceneId); if(!s) return;
+    setPlaylist(pl=>[...pl,{pid:uid("P"),sceneId:s.id,name:s.name}]);
+  }
+  function rmFromPlaylist(pid){ if(!caps.addRemove) return; setPlaylist(pl=>pl.filter(p=>p.pid!==pid)); }
+  function clearPlaylist(){ if(!caps.addRemove) return; setPlaylist([]); setCurrentIdx(0); }
+
+  const [dragPid, setDragPid] = useState(null);
+  function onDragStart(e,pid){ if(!caps.reorder) return; setDragPid(pid); e.dataTransfer.effectAllowed="move"; }
+  function onDragOver(e,over){ if(!caps.reorder) return; e.preventDefault();
+    if(dragPid===null || dragPid===over) return;
+    const src = playlist.findIndex(p=>p.pid===dragPid);
+    const dst = playlist.findIndex(p=>p.pid===over);
+    if(src<0||dst<0) return;
+    const next=[...playlist]; const [m]=next.splice(src,1); next.splice(dst,0,m); setPlaylist(next);
+  }
+  function onDrop(){ if(!caps.reorder) return; setDragPid(null); }
+
+  function applyPlaylistIndex(i){
+    if(!playlist.length) return;
+    const idx = ((i%playlist.length)+playlist.length)%playlist.length;
+    setCurrentIdx(idx);
+    const entry = playlist[idx];
+    applyScene(entry.sceneId);
+  }
+  function nextScene(){ if(playlist.length) applyPlaylistIndex(currentIdx+1); }
+  function prevScene(){ if(playlist.length) applyPlaylistIndex(currentIdx-1); }
+
+  useEffect(()=>{
+    if(!caps.showPlaylist || !playing || !playlist.length) return;
+    const h = setInterval(()=>nextScene(), Math.max(1,auto)*1000);
+    return ()=>clearInterval(h);
+  },[playing, playlist.length, currentIdx, auto, caps.showPlaylist]);
+
+  function stagePath(){ const s={x:R,y:0}, e={x:0,y:R}; return `M ${s.x} ${s.y} A ${R} ${R} 0 0 1 ${e.x} ${e.y} L 0 0 Z`; }
+  function toSvgPoint(evt){
+    const svg = svgRef.current, rect = svg.getBoundingClientRect();
+    const px = evt.clientX - rect.left, py = evt.clientY - rect.top;
+    const x = VIEWBOX.x + (px/rect.width)*VIEWBOX.w, y = VIEWBOX.y + (py/rect.height)*VIEWBOX.h;
+    return {x,y};
+  }
+  function constrain(x,y){ const m=R+60; return {x:clamp(x,0,m), y:clamp(y,0,m)}; }
+  function onMove(e){ if(!caps.canEdit || !dragId) return; const p=toSvgPoint(e); const c=constrain(p.x,p.y); setLights(ls=>ls.map(l=>l.id===dragId? {...l,x:c.x,y:c.y}:l)); }
+  function onUp(){ if(dragId) setDragId(null); }
+
+  function exportFull(){
+    const blob = new Blob([JSON.stringify({theme,lights,scenes,playlist},null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href=url; a.download="stage_full_export.json"; a.click(); URL.revokeObjectURL(url);
+  }
+  function importFull(file){
+    const r = new FileReader();
+    r.onload = ()=>{
+      try{
+        const data = JSON.parse(r.result);
+        if(data.theme) setTheme(data.theme);
+        if(Array.isArray(data.lights)) setLights(data.lights);
+        if(Array.isArray(data.scenes)) setScenes(data.scenes);
+        if(Array.isArray(data.playlist)) setPlaylist(data.playlist);
+      }catch{ alert("Ungültige Datei"); }
+    };
+    r.readAsText(file);
+  }
+
+  async function sendDMX(channels){
+    try{
+      await fetch("/api/dmx", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({channels})
+      });
+    }catch(e){ console.warn("DMX send failed", e); }
+  }
+
+  useEffect(()=>{
+    if(mode==="show" || mode==="guest") return;
+    const ch = buildDMXChannels(lights);
+    sendDMX(ch);
+  },[lights, mode]);
+
+  function guestApply(name){
+    const s = scenes.find(sc=>sc.name===name);
+    if(s){ applyScene(s.id); }
+  }
+
+  const selected = useMemo(()=> lights.find(l=>l.id===selectedId) || null, [lights,selectedId]);
+  const leftHidden = (mode==="show" || mode==="guest");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="pill">Viertelkreis r=4m</div>
+          <div className="pill">{mode.toUpperCase()}</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Theme</label>
+          <select className="btn" value={theme} onChange={e=>setTheme(e.target.value)}>
+            {THEMES.map(t=><option key={t} value={t}>{t}</option>)}
+          </select>
+          { (mode!=="show" && mode!=="guest") && (
+            <>
+              <button className="btn" onClick={exportFull}>Export (alles)</button>
+              <label className="btn cursor-pointer">Import
+                <input type="file" accept="application/json" className="hidden"
+                  onChange={e=> e.target.files?.[0] && importFull(e.target.files[0])}/>
+              </label>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        {MODES.map(m => (
+          <button key={m} className={`btn ${mode===m?'border-indigo-400/60':''}`} onClick={()=>setMode(m)}>{m}</button>
+        ))}
+      </div>
+
+      <div className={`gap-4 ${leftHidden? 'grid2' : ( (mode==="probe") ? 'grid3' : 'grid2')}`}>
+        {!leftHidden && (
+          <div className="card">
+            <div className="text-lg mb-2">{mode==="editor"?"Editor":"Probephase"}</div>
+            <div className={`grid2 ${!caps.canEdit?'muted':''}`}>
+              {lights.map(l=>(
+                <button key={l.id} className={`kachel text-left ${selectedId===l.id?'border-indigo-400/60':''}`} onClick={()=>setSelectedId(l.id)}>
+                  <div className="font-medium">{l.label}</div>
+                  <div className="text-xs opacity-75">Typ {l.type} · DMX {l.dmx.start}</div>
+                  <div className="text-xs mt-1">Brightness {l.brightness}%</div>
+                </button>
+              ))}
+            </div>
+
+            {selected && (
+              <div className={`mt-3 card ${!caps.canEdit?'muted':''}`}>
+                <div className="flex gap-2 items-center">
+                  <input className="btn" value={selected.label} onChange={e=>renameLight(selected.id, e.target.value)} />
+                  <select className="btn" value={selected.type} onChange={e=>setType(selected.id, e.target.value)}>
+                    {TYPES.map(t=><option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <div className="ml-auto text-sm">{selected.brightness}%</div>
+                </div>
+                <input type="range" min="0" max="100" value={selected.brightness} onChange={e=>setBrightness(selected.id, e.target.value)} className="w-full mt-2"/>
+                {selected.type==="RGB" && (
+                  <div className="grid3 mt-2">
+                    {["r","g","b"].map(ch=>(
+                      <div key={ch} className="card">
+                        <div className="text-xs mb-1">{ch.toUpperCase()}</div>
+                        <input type="range" min="0" max="255" value={selected[ch]} onChange={e=>setRGB(selected.id, ch, e.target.value)} className="w-full"/>
+                        <div className="text-right text-xs">{selected[ch]}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="grid3 mt-2">
+                  <label className="text-xs">U <input type="number" className="btn ml-1 w-20" value={selected.dmx.universe} onChange={e=>setDMX(selected.id,{universe:Number(e.target.value)})}/></label>
+                  <label className="text-xs">Start <input type="number" className="btn ml-1 w-24" value={selected.dmx.start} onChange={e=>setDMX(selected.id,{start:Number(e.target.value)})}/></label>
+                  <label className="text-xs">Mode <input type="text" className="btn ml-1 w-24" value={selected.dmx.mode} onChange={e=>setDMX(selected.id,{mode:e.target.value})}/></label>
+                </div>
+              </div>
+            )}
+
+            <div className={`mt-3 card ${!caps.sceneSaveDelete?'muted':''}`}>
+              <div className="text-md mb-2">Szenen</div>
+              {caps.sceneSaveDelete && <SceneCreator onSave={saveScene}/>}
+              <div className="mt-2" style={{maxHeight:240, overflow:"auto"}}>
+                {scenes.map(s=>(
+                  <div key={s.id} className="flex gap-2 items-center border border-slate-700 rounded-lg p-2 mb-2">
+                    <div className="font-medium">{s.name}</div>
+                    <div className="ml-auto flex gap-2">
+                      <button className="btn" onClick={()=>applyScene(s.id)}>Laden</button>
+                      {caps.addRemove && <button className="btn" onClick={()=>addToPlaylist(s.id)}>+ Playlist</button>}
+                      {caps.sceneSaveDelete && <button className="btn" onClick={()=>deleteScene(s.id)}>Löschen</button>}
+                    </div>
+                  </div>
+                ))}
+                {scenes.length===0 && <div className="text-xs opacity-70">Noch keine Szenen.</div>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="card">
+          <div className="text-sm mb-2">Bühne (Viertelkreis r={RADIUS_M}m)</div>
+          <div className="relative w-full" style={{aspectRatio:"1/1"}}>
+            <svg ref={svgRef} viewBox={`${VIEWBOX.x} ${VIEWBOX.y} ${VIEWBOX.w} ${VIEWBOX.h}`}
+                 onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} style={{width:"100%", height:"100%"}}>
+              <defs>
+                <radialGradient id="stageGrad" cx="0" cy="0" r="1">
+                  <stop offset="0%" stopColor={"#303446"}></stop>
+                  <stop offset="100%" stopColor={"#1e293b"}></stop>
+                </radialGradient>
+                {lights.map(l=>(
+                  <radialGradient key={`beam-${l.id}`} id={`beam-${l.id}`} cx="0" cy="0" r="1">
+                    <stop offset="0%" stopColor={beamColor(l)} stopOpacity="0.9"></stop>
+                    <stop offset="40%" stopColor={beamColor(l)} stopOpacity={0.45*(l.brightness/100)}></stop>
+                    <stop offset="100%" stopColor={beamColor(l)} stopOpacity="0"></stop>
+                  </radialGradient>
+                ))}
+              </defs>
+              <path d={stagePath()} fill="url(#stageGrad)" stroke="#475569" strokeWidth="2"/>
+              <path d={`M ${R + 40} 0 A ${R + 40} ${R + 40} 0 0 1 0 ${R + 40}`} stroke="#64748b" strokeWidth="2" fill="none" strokeDasharray="6 6"/>
+              {lights.map(l=>{
+                const bs = l.brightness/100;
+                const dirx = -l.x, diry=-l.y, L=Math.max(1,len(dirx,diry)), ux=dirx/L, uy=diry/L;
+                const spread = 18*Math.PI/180, half=spread/2, bl = (R*0.9)*(0.6+0.4*bs);
+                const c1 = Math.cos(-half), s1=Math.sin(-half), c2=Math.cos(half), s2=Math.sin(half);
+                const rx1=ux*c1-uy*s1, ry1=ux*s1+uy*c1, rx2=ux*c2-uy*s2, ry2=ux*s2+uy*c2;
+                const p0={x:l.x,y:l.y}, p1={x:l.x+rx1*bl, y:l.y+ry1*bl}, p2={x:l.x+rx2*bl, y:l.y+ry2*bl};
+                return (
+                  <g key={l.id}>
+                    <path d={`M ${p0.x} ${p0.y} L ${p1.x} ${p1.y} L ${p2.x} ${p2.y} Z`} fill={`url(#beam-${l.id})`} style={{mixBlendMode:"lighten", opacity: (bs>0)? (0.18 + bs*0.6): 0}}/>
+                    <g onMouseDown={(e)=>{ if(!caps.canEdit) return; e.stopPropagation(); setDragId(l.id); }} cursor={caps.canEdit? "grab":"default"}>
+                      <circle cx={l.x} cy={l.y} r={8} stroke="#cbd5e1" strokeWidth="2" fill="#0f172a"/>
+                    </g>
+                    <text x={l.x+12} y={l.y-6} fontSize="10" fill="#cbd5e1">{l.label}</text>
+                  </g>
+                );
+              })}
+              <line x1="0" y1="-10" x2="0" y2={R} stroke="#334155" strokeWidth="2"/>
+              <line x1="-10" y1="0" x2={R} y2="0" stroke="#334155" strokeWidth="2"/>
+            </svg>
+          </div>
+
+          {mode==="guest" ? (
+            <div className="mt-3 grid2">
+              {["Party","Wohnzimmer Konzert 1","Rock Konzert","Arbeitslicht"].map(name => (
+                <button key={name} className="kachel" onClick={()=>guestApply(name)}>{name}</button>
+              ))}
+            </div>
+          ) : (
+            caps.playerControls && (
+              <div className="mt-3 card">
+                <div className="flex items-center gap-2">
+                  <button className="btn" onClick={()=>{ if(!playlist.length) return; setPlaying(p=>!p); if(!playing) applyPlaylistIndex(currentIdx); }}>{playing?"Pause":"Play"}</button>
+                  <button className="btn" onClick={()=>applyPlaylistIndex(currentIdx)}>Aktuelle anwenden</button>
+                  <button className="btn" onClick={prevScene}>Zurück</button>
+                  <button className="btn" onClick={nextScene}>Weiter</button>
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-sm">Auto (s)</span>
+                    <input type="number" min="1" className="btn" style={{width:80}} value={auto} onChange={e=>caps.autoEdit && setAuto(Number(e.target.value)||5)} disabled={!caps.autoEdit}/>
+                    {caps.addRemove && <button className="btn" onClick={clearPlaylist}>Clear</button>}
+                  </div>
+                </div>
+
+                {(mode!=="editor") && (
+                  <div className={`mt-3 ${!caps.reorder?'muted':''}`} style={{maxHeight:240, overflow:"auto"}}>
+                    {playlist.length===0 && <div className="text-xs opacity-70">Keine Einträge. Füge im Tab „Probephase“ über „+ Playlist“ hinzu.</div>}
+                    {playlist.map((p,idx)=>(
+                      <div key={p.pid} draggable={caps.reorder}
+                           onDragStart={(e)=>onDragStart(e,p.pid)}
+                           onDragOver={(e)=>onDragOver(e,p.pid)} onDrop={onDrop}
+                           className={`flex items-center gap-2 border border-slate-700 rounded-lg p-2 mb-2 ${idx===currentIdx?'border-indigo-400/60':''}`}>
+                        <div className="pill">{idx+1}</div>
+                        <div className="flex-1">{p.name}</div>
+                        <button className="btn" onClick={()=>applyPlaylistIndex(idx)}>Go</button>
+                        {caps.addRemove && <button className="btn" onClick={()=>rmFromPlaylist(p.pid)}>Entfernen</button>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          )}
+        </div>
+
+        {(!leftHidden && mode==="probe") && (
+          <div className="card">
+            <div className="text-md mb-2">Szenen (→ Playlist)</div>
+            <div style={{maxHeight:520, overflow:"auto"}}>
+              {scenes.map(s=>(
+                <div key={s.id} className="flex items-center gap-2 border border-slate-700 rounded-lg p-2 mb-2">
+                  <div className="font-medium">{s.name}</div>
+                  <div className="ml-auto flex gap-2">
+                    <button className="btn" onClick={()=>applyScene(s.id)}>Laden</button>
+                    <button className="btn" onClick={()=>addToPlaylist(s.id)}>+ Playlist</button>
+                  </div>
+                </div>
+              ))}
+              {scenes.length===0 && <div className="text-xs opacity-70">Keine Szenen vorhanden.</div>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SceneCreator({onSave}){
+  const [name,setName] = React.useState("");
+  return (
+    <div className="flex gap-2 items-center">
+      <input className="btn flex-1" placeholder="Szenenname…" value={name} onChange={e=>setName(e.target.value)}/>
+      <button className="btn" onClick={()=>{ onSave(name.trim()); setName(""); }}>Speichern</button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+  </script>
+</body>
+</html>
